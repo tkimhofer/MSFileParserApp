@@ -2,6 +2,7 @@ from dash import Dash, html, dcc, callback, dash_table
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
+import dash_mantine_components as dmc
 from scr import conv
 import logging as l
 
@@ -28,26 +29,54 @@ logger.addHandler(ch)
 # logger.error('error message')
 # logger.critical('kiss kiss')
 
-
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = [
+    # "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
+    # 'https://fonts.googleapis.com/css2?family=Freehand&display=swap',
+'https://fonts.googleapis.com/css2?family=Freehand&family=Shrikhand&display=swap'
+]
+# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
+app.layout = dmc.MantineProvider(
+    children = [
+        html.Div(children=[
+        html.H1(children='MS file parser', style={"font-family": "'Shrikhand'"}),
+        html.Div(#dmc.Container([
+        dmc.Group(children=[
 
-app.layout = html.Div(children=[
-    html.H1(children='MS file parser'),
-    dcc.Upload(id='upload-data', children=['Drag and Drop or ', html.A('Select a File')], style={
-        'width': '100%',
-        'height': '60px',
-        'lineHeight': '60px',
-        'borderWidth': '1px',
-        'borderStyle': 'dashed',
-        'borderRadius': '5px',
-        'textAlign': 'center'
-    }, multiple=True),
-    html.Hr(),
-    html.Button("Download CSV", id="btn_csv"),
-    dcc.Download(id="download-dataframe-csv"),
-    html.Div(id='output-data-upload'),
+            dmc.Chips(
+                id="vartype",
+                data=[
+                    {"value": "Conc.", "label": "Concentration"},
+                    {"value": "Response", "label": "Response"},
+                ],
+                value="Conc.",
+            ),
+            dmc.Space(h=10),
+            dmc.Checkbox(
+                id="includeIS",
+                label="include calibration samples",
+            )
+
+        ], position='left')
+        #])
+),
+            dmc.Space(h=10),
+        dmc.Space(h=10),
+        dcc.Upload(id='upload-data', children=['Drag and Drop or ', html.A('Select a File')], style={
+            'width': '100%',
+            'height': '60px',
+            'lineHeight': '60px',
+            'borderWidth': '1px',
+            'borderStyle': 'dashed',
+            'borderRadius': '5px',
+            'textAlign': 'center'
+        }, multiple=True),
+        html.Hr(),
+        html.Button("Download CSV", id="btn_csv"),
+        dcc.Download(id="download-dataframe-csv"),
+        html.Div(id='output-data-upload'),
+            ])
 ])
 
 # def fileparser(contentlist, filelist):
@@ -79,11 +108,18 @@ def func(n_clicks):
 
 @app.callback(Output('output-data-upload', 'children'),
               Input('upload-data', 'contents'),
-              State('upload-data', 'filename'))
-def update_output(list_of_contents, list_of_names):
+              State('upload-data', 'filename'),
+              Input('vartype', 'value'),
+              Input("includeIS", "checked")
+              )
+def update_output(list_of_contents, list_of_names, vtype, inIS):
     if list_of_contents is not None:
         global df
-        df = conv.readbin(list_of_contents, list_of_names)
+        print('vtype and inIS')
+        print(vtype)
+        print(inIS)
+        print('done')
+        df = conv.readbin(list_of_contents, list_of_names, varType=vtype, sil=inIS)
         children = [
             html.Div([
                 html.Hr(),

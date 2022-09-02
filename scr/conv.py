@@ -1,5 +1,6 @@
 import pandas as pd
 import logging as l
+import re
 
 logger = l.getLogger('ct.conv')
 logger.setLevel(l.DEBUG)
@@ -130,14 +131,18 @@ def readMat(content, filename):
         df['cpd'] = fid
         df['path'] = filename
         mets.append(df)
-
+    # import pickle
+    # pickle.dump(pd.concat(mets), open('/Users/TKimhofer/Downloads/RE__Trp_data_from_PAT01/Barwon_adult.p', 'wb'))
     return pd.concat(mets)
 
 @logM
-def readbin(contents, filenames):
+def readbin(contents, filenames, varType='Conc.', featureType='analyte|standard', sil=True):
     ''' converts base64 binary encoded string to desired output format
     filename is string, content is base64 encoded binary string
+    varType is desired variable in data file (typically 'Conc.' or 'Response')
+    featureType is desired feature information in regex with ignore case flag (e.g. 'analyte' or 'analyte|cal')
     '''
+
     dfs={'data': [], 'fn' : []}
     for c, f in zip(contents, filenames):
         try:
@@ -147,7 +152,6 @@ def readbin(contents, filenames):
             dfs['fn'].append(f)
             print(f'Import failed for {f}')
             continue
-
     try:
         ds = pd.concat(dfs['data'])
     except:
@@ -156,26 +160,41 @@ def readbin(contents, filenames):
         return None
 
     # remove QCs and internal standards
-    ds=ds[ds.Type == 'Analyte']
-    ds= ds[~ ds.cpd.str.contains('^SIL')]
+    # print(ds['Sample Text'].value_counts())
+    ds=ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)]
+    # print(ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE).value_counts())
+    # print(ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)])
+    # print(ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)].iloc[0].T)
+    if not sil:
+        ds= ds[~ ds.cpd.str.contains('^SIL')]
     # print(ds.columns)
-    ds['id'] = ds['path']+ds['Name']+ds['Sample Text']
-    ds.set_index(['id'])
-    tf=ds.pivot_table(index = 'id', columns='cpd', values='Conc.')
+    # ds.Type.value_counts()
+    # ds['id'] = ds['path']+ds['Name']+ds['Sample Text']
+    # ds.set_index(['id'])
+    # np.array([x[2] for x in tf.index])
+    tf=ds.pivot_table(index = ['path','Name', 'Sample Text'], columns='cpd', values=varType)
+    # print(tf[0:4])
     tf = tf.astype(float)
-    tf.insert(loc=0, column='id', value=tf.index)
+    # tf.insert(loc=0, column='id', value=tf.index)
     return tf
 
 
 
-
 #
-#
+# #
+# #
 # fh= '/Users/TKimhofer/Downloads/RE__Trp_data_from_PAT01/Barwon_adult_Plate9.TXT'
+# import pandas as pd
+# pd.read_csv(fh, encoding='latin1')
 # import base64
 # with open(fh, 'rb') as file:
-#     dat = file.read()
-#
-#
-# content=base64.b64encode(dat)
-# # content=base64.decodebytes(r)
+# #     dat = file.read()
+# import pickle
+# df=pickle.load(open('/Users/TKimhofer/Downloads/RE__Trp_data_from_PAT01/Barwon_adult.p', 'rb'))
+# ds=df
+# # #
+# # content=base64.b64encode(dat)
+# # # content=base64.decodebytes(r)
+# [x[2] for x in tf.index]
+# [x[2] for x in tf.index if 'Cal' in x]
+# df['Sample Text'].
