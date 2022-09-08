@@ -175,26 +175,27 @@ def readbin(contents, filenames, varType='Conc.', featureType='analyte|standard'
     tf=ds.pivot_table(index = ['path','Name', 'Sample Text'], columns='cpd', values=varType)
     # print(tf[0:4])
     tf = tf.astype(float)
+    tff = tf.reset_index()
     # tf.insert(loc=0, column='id', value=tf.index)
-    return tf
+    return tff
 
 
 
-#
 # #
-# #
+# # #
+# # # #
 # fh= '/Users/TKimhofer/Downloads/RE__Trp_data_from_PAT01/Barwon_adult_Plate9.TXT'
 # import pandas as pd
 # pd.read_csv(fh, encoding='latin1')
 # import base64
 # with open(fh, 'rb') as file:
-# #     dat = file.read()
-# import pickle
-# df=pickle.load(open('/Users/TKimhofer/Downloads/RE__Trp_data_from_PAT01/Barwon_adult.p', 'rb'))
-# ds=df
-# # #
-# # content=base64.b64encode(dat)
-# # # content=base64.decodebytes(r)
-# [x[2] for x in tf.index]
-# [x[2] for x in tf.index if 'Cal' in x]
-# df['Sample Text'].
+#      dat = file.read()
+# # import pickle
+# # df=pickle.load(open('/Users/TKimhofer/Downloads/RE__Trp_data_from_PAT01/Barwon_adult.p', 'rb'))
+# # ds=df
+# # # #
+# # # content=base64.b64encode(dat)
+# # # # content=base64.decodebytes(r)
+# # [x[2] for x in tf.index]
+# # [x[2] for x in tf.index if 'Cal' in x]
+# # df['Sample Text'].

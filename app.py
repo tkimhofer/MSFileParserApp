@@ -5,45 +5,35 @@ import pandas as pd
 import dash_mantine_components as dmc
 from scr import conv
 import logging as l
+from flask import Flask
 
 logger = l.getLogger('ct')
 logger.setLevel(l.DEBUG)
-
-# create console handler and set level to debug
 ch = l.StreamHandler()
 ch.setLevel(l.DEBUG)
-
-# create formatter
 formatter = l.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# add formatter to ch
 ch.setFormatter(formatter)
-
-# add ch to logger
 logger.addHandler(ch)
 
-# # 'application' code
-# logger.debug('debug message')
-# logger.info('info message')
-# logger.warning('warn message')
-# logger.error('error message')
-# logger.critical('kiss kiss')
+
+server = Flask(__name__) # define flask app.server
+# app = Dash(__name__, server=server)
 
 external_stylesheets = [
     # "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap",
     # 'https://fonts.googleapis.com/css2?family=Freehand&display=swap',
-'https://fonts.googleapis.com/css2?family=Freehand&family=Shrikhand&display=swap'
+'https://fonts.googleapis.com/css2?family=Play&display=swap'
 ]
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+app = Dash(__name__, external_stylesheets=external_stylesheets, server=server, suppress_callback_exceptions=True)
+app.title='MS-FP'
 
 app.layout = dmc.MantineProvider(
     children = [
         html.Div(children=[
-        html.H1(children='MS file parser', style={"font-family": "'Shrikhand'"}),
+        html.H1(children='MS file parser', style={"font-family": "'Play'"}),
         html.Div(#dmc.Container([
         dmc.Group(children=[
-
             dmc.Chips(
                 id="vartype",
                 data=[
@@ -55,11 +45,9 @@ app.layout = dmc.MantineProvider(
             dmc.Space(h=10),
             dmc.Checkbox(
                 id="includeIS",
-                label="include calibration samples",
+                label="include internal Stds",
             )
-
         ], position='left')
-        #])
 ),
             dmc.Space(h=10),
         dmc.Space(h=10),
@@ -72,45 +60,27 @@ app.layout = dmc.MantineProvider(
             'borderRadius': '5px',
             'textAlign': 'center'
         }, multiple=True),
-        html.Hr(),
-        html.Button("Download CSV", id="btn_csv"),
+        # html.Button("Download CSV", id="btn_csv"),
         dcc.Download(id="download-dataframe-csv"),
-        html.Div(id='output-data-upload'),
+        dcc.Loading(id='loadingTbl', children=[html.Div(id='output_downloadBtn'), html.Div(id='output-data-upload')], type="cube", fullscreen=True, color='#8151FD')
+        # html.Div(id='output-data-upload'),
             ])
 ])
 
-# def fileparser(contentlist, filelist):
-#     # import datetime
-#     ds = conv.readbin(contentlist, filelist)
-#     # try:
-#     #     ds = conv.readbin(contentlist, filelist)
-#     #     if ds is None:
-#     #         return html.Div([
-#     #             'There was an error processing this file.'
-#     #         ])
-#     #
-#     # except:
-#     #     return html.Div([
-#     #         'There was an error processing this file.'
-#     #     ])
-#
-#     # html.H5(filename),
-#     # html.H6(datetime.datetime.fromtimestamp(date)),
-#     return ds
 @app.callback(
     Output("download-dataframe-csv", "data"),
     Input("btn_csv", "n_clicks"),
     prevent_initial_call=True)
 def func(n_clicks):
+    print(n_clicks)
     return dcc.send_data_frame(df.to_csv, "mydf.csv")
 
-
-
 @app.callback(Output('output-data-upload', 'children'),
+              Output('output_downloadBtn', 'children'),
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
               Input('vartype', 'value'),
-              Input("includeIS", "checked")
+              Input("includeIS", "checked"), prevent_initial_call=True
               )
 def update_output(list_of_contents, list_of_names, vtype, inIS):
     if list_of_contents is not None:
@@ -125,55 +95,38 @@ def update_output(list_of_contents, list_of_names, vtype, inIS):
                 html.Hr(),
                 dash_table.DataTable(
                     data=df.to_dict('records'),
-                    columns=[{'name': i, 'id': i, 'type': ('numeric' if i != 'id' else 'text')} for i in df.columns],
+                    columns=[{'name': i, 'id': i, 'type': ('text' if i in['path', 'Name', 'Sample Text'] else 'numeric')} for i in df.columns],
+                    # columns=[{'name': i, 'id': i, } for i in df.columns],
+                    page_size=30,  # we have less data in this example, so setting to 20
+                    style_table={'overflowY': 'auto'},
                     sort_action='native',
                     filter_action='native',
-                    sort_mode = 'multi',
-                    #row_selectable="multi",
-                    page_size=50,
-                    # row_deletable=True,
-                    # table style (ordered by increased precedence: see
-                    # https://dash.plot.ly/datatable/style in § "Styles Priority"
-                    # style table
-                    style_data = {
+                    style_header={
                         'whiteSpace': 'normal',
-                        'height': 'auto',
+                        'minHeight': '100px', 'height': '110px', 'maxHeight': '150px',
+                        'minWidth': '100px', 'width': '110px', 'maxWidth': '150px',
+                        # 'lineHeight': '15px'
                     },
-                    style_table={
-                        #'maxHeight': '50ex',
-                        'overflowX': 'auto',
-                        'overflowY': 'auto',
-                        'width': '100%',
-                        'minWidth': '100%',
-                    },
-                    # style cell
-                    style_cell={
-                        'fontFamily': 'Open Sans',
-                        'textAlign': 'center',
-                        # 'height': 'auto',
-                        # 'widtj': 'auto',
-                        # 'padding': '2px 22px',
-                        # 'whiteSpace': 'inherit',
+                    style_data={
+                        # 'whiteSpace': 'normal',
+                        'minWidth': '100px', 'width': '110px', 'maxWidth': '150px',
                         'overflow': 'hidden',
                         'textOverflow': 'ellipsis',
+                        # 'maxWidth': 0,
                     },
-                    # style header
-                    style_header={
-                        'fontWeight': 'bold',
-                        'backgroundColor': 'white',
-                    },
-
-                    style_cell_conditional=[
-                        {
-                            'if': {'column_id': 'id'},
-                            'textAlign': 'left'
-                        }
-                    ]
+                    tooltip_data=[
+                        {column: {'value': '\n'.join(value.split('_')) , 'type': 'markdown'} for column, value in row.items() if column in  ['Name', 'Sample Text'] } for row in df.to_dict('records')
+                    ],
+                    tooltip_duration=None,
+                    style_cell={
+                        'fontFamily': 'Open Sans',
+                        'textAlign': 'center',}
+                )])]
 
 
-                )])
-        ]
-        return children
+        c1 = [html.Hr(), dmc.Button("Download CSV", id="btn_csv", variant="gradient",
+                   gradient={"from": "teal", "to": "lime", "deg": 105})]
+        return children, c1
 
 
 if __name__ == '__main__':
