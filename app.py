@@ -6,6 +6,7 @@ import dash_mantine_components as dmc
 from scr import conv
 import logging as l
 from flask import Flask
+import datetime as dt
 
 logger = l.getLogger('ct')
 logger.setLevel(l.DEBUG)
@@ -38,7 +39,8 @@ app.layout = dmc.MantineProvider(
                 id="vartype",
                 data=[
                     {"value": "Conc.", "label": "Concentration"},
-                    {"value": "Response", "label": "Response"},
+                    {"value": "Response", "label": "Response",},
+                    {"value": "Area", "label": "Area",}
                 ],
                 value="Conc.",
             ),
@@ -62,7 +64,7 @@ app.layout = dmc.MantineProvider(
         }, multiple=True),
         # html.Button("Download CSV", id="btn_csv"),
         dcc.Download(id="download-dataframe-csv"),
-        dcc.Loading(id='loadingTbl', children=[html.Div(id='output_downloadBtn'), html.Div(id='output-data-upload')], type="cube", fullscreen=True, color='#8151FD')
+        dcc.Loading(id='loadingTbl', children=[html.Div(id='output_downloadBtn'), dmc.Space(h=30), html.Div(id='output-summary'), html.Div(id='output-data-upload')], type="cube", fullscreen=True, color='#8151FD')
         # html.Div(id='output-data-upload'),
             ])
 ])
@@ -70,26 +72,29 @@ app.layout = dmc.MantineProvider(
 @app.callback(
     Output("download-dataframe-csv", "data"),
     Input("btn_csv", "n_clicks"),
-    prevent_initial_call=True)
-def func(n_clicks):
-    print(n_clicks)
-    return dcc.send_data_frame(df.to_csv, "mydf.csv")
+    State('vartype', 'value'),
+    State("includeIS", "checked"),
+    prevent_initial_call=True
+)
+def func(n_clicks, vtype, intStd):
+    if n_clicks is not None:
+        now = dt.datetime.now().strftime("%d-%m %H:%M:%S")
+        sil = 'noSIL'if not bool(intStd) else 'withSil'
+        return dcc.send_data_frame(df.to_csv, f"df_{vtype.replace('.', '').lower()}_{sil}_{now}_.csv")
 
 @app.callback(Output('output-data-upload', 'children'),
               Output('output_downloadBtn', 'children'),
+              Output('output-summary', 'children'),
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
               Input('vartype', 'value'),
-              Input("includeIS", "checked"), prevent_initial_call=True
+              Input("includeIS", "checked"),
+              prevent_initial_call=True
               )
 def update_output(list_of_contents, list_of_names, vtype, inIS):
     if list_of_contents is not None:
         global df
-        print('vtype and inIS')
-        print(vtype)
-        print(inIS)
-        print('done')
-        df = conv.readbin(list_of_contents, list_of_names, varType=vtype, sil=inIS)
+        df = conv.readbin(list_of_contents, list_of_names, varType=vtype, sil=bool(inIS))
         children = [
             html.Div([
                 html.Hr(),
@@ -122,11 +127,11 @@ def update_output(list_of_contents, list_of_names, vtype, inIS):
                         'fontFamily': 'Open Sans',
                         'textAlign': 'center',}
                 )])]
-
-
         c1 = [html.Hr(), dmc.Button("Download CSV", id="btn_csv", variant="gradient",
                    gradient={"from": "teal", "to": "lime", "deg": 105})]
-        return children, c1
+
+        dims = dmc.Text(f'{df.shape[0]} samples x {df.shape[1]} analytes')
+        return children, c1, dims
 
 
 if __name__ == '__main__':

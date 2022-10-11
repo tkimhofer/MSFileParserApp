@@ -172,7 +172,7 @@ def readbin(contents, filenames, varType='Conc.', featureType='analyte|standard'
     # ds['id'] = ds['path']+ds['Name']+ds['Sample Text']
     # ds.set_index(['id'])
     # np.array([x[2] for x in tf.index])
-    tf=ds.pivot_table(index = ['path','Name', 'Sample Text'], columns='cpd', values=varType)
+    tf=ds.pivot_table(index = ['path','Name'], columns='cpd', values=varType)
     # print(tf[0:4])
     tf = tf.astype(float)
     tff = tf.reset_index()
