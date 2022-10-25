@@ -34,11 +34,8 @@ def logM(f):
         print(f'ids: {ids}')
         print(f'ids1: {ids1}')
         print(f'locals: {dd.keys()}')
-
         dat = ids[0:len(dd)]
         print(dat)
-
-
         logger.debug('calling %s%s' % (f.__name__, ids))
         for i in range(n):
             if len(f.__dict__) > 0:
@@ -142,6 +139,9 @@ def readbin(contents, filenames, varType='Conc.', featureType='analyte|standard'
     varType is desired variable in data file (typically 'Conc.' or 'Response')
     featureType is desired feature information in regex with ignore case flag (e.g. 'analyte' or 'analyte|cal')
     '''
+    # import pickle
+    # pickle.dump([contents, filenames, varType, featureType, sil], open('/Users/tk/PycharmProjects/convtar/check.pi', 'wb'))
+    # contents, filenames, varType, featureType, sil = pickle.load(open('/Users/tk/PycharmProjects/convtar/check.pi', 'rb'))
 
     dfs={'data': [], 'fn' : []}
     for c, f in zip(contents, filenames):
@@ -161,7 +161,10 @@ def readbin(contents, filenames, varType='Conc.', featureType='analyte|standard'
 
     # remove QCs and internal standards
     # print(ds['Sample Text'].value_counts())
-    ds=ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)]
+    try:
+        ds=ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)]
+    except:
+        pass
     # print(ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE).value_counts())
     # print(ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)])
     # print(ds[ds.Type.str.contains(featureType, regex=True, flags=re.IGNORECASE)].iloc[0].T)
