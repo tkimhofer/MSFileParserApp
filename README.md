@@ -6,7 +6,7 @@
 
 This tool is ideal for labs and analysts looking for a fast, browser-based interface to convert Skyline output into a pivoted matrix (samples × analytes).
 
-⚠️Notice: Since updating the layout, the app may currently throw warnings or errors when switching between Concentration, Response, or Area as the selected feature quantifier. If conversion does not complete or an error occurs, please open an issue or contact me via email at tkimhofer@gmail.com.
+> ⚠️ Notice: Since updating the layout, the app may currently throw warnings or errors when switching between Concentration, Response, or Area as the selected feature quantifier. If conversion does not complete or an error occurs, please open an issue or contact me via email at tkimhofer@gmail.com.
 
 
 ---
