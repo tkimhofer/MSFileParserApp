@@ -8,7 +8,7 @@ This tool is ideal for labs and analysts looking for a fast, browser-based inter
 
 ## 🔍 What It Does
 
-- Parses and decodes .TXT` Skyline data files
+- Parses .TXT` Skyline data files
 - Extracts quantification metrics like **Concentration**, **Response**, or **Area**
 - Supports toggling of **internal standard inclusion**
 - Transforms long-form MS data into a **pivoted matrix**: samples × analytes
