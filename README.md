@@ -1,8 +1,13 @@
+[![Docker App CI](https://github.com/tkimhofer/MSFileParserApp/actions/workflows/main.yml/badge.svg)](https://github.com/tkimhofer/MSFileParserApp/actions/workflows/main.yml)
+
 # MSFileParserApp
 
 **MSFileParserApp** is a Python Dash web application that parses targeted mass spectrometry experiment from **Skyline** and converts them into a **2D matrix format** for downstream statistical or bioinformatics analysis.
 
 This tool is ideal for labs and analysts looking for a fast, browser-based interface to convert Skyline output into a pivoted matrix (samples × analytes).
+
+⚠️Notice: Since updating the layout, the app may currently throw warnings or errors when switching between Concentration, Response, or Area as the selected feature quantifier. If conversion does not complete or an error occurs, please open an issue or contact me via email at tkimhofer@gmail.com.
+
 
 ---
 
