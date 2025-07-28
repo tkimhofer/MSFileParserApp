@@ -1,32 +1,28 @@
-name: App Run Test
+name: Docker App CI
 
 on:
   push:
-    branches: [master]
+    branches: ["master"]
   pull_request:
+    branches: ["master"]
 
 jobs:
-  test:
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  build-and-test:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Build Docker image
+        run: docker build -t dash-ms-parser .
 
-      - name: Smoke test Dash app
+      - name: Run container test
         run: |
-          python -c "from app import app; assert callable(app.run_server)"
+          docker run --rm -d -p 8050:8050 --name dash_test dash-ms-parser
+          sleep 10
+          docker ps -a
+          curl --retry 5 --retry-connrefused --silent --show-error http://localhost:8050
