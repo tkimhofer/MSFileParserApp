@@ -1,14 +1,13 @@
 from dash import Dash, html, dcc, dash_table
 from dash.dependencies import Input, Output, State
 import dash_mantine_components as dmc
-# import plotly.express as px
 import pandas as pd
 from scr import conv
 from flask import Flask
 import datetime as dt
 import logging
 
-# ---------------- Logging Setup ----------------
+
 logger = logging.getLogger('ct')
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -17,7 +16,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# ---------------- Flask/Dash Setup ----------------
+
 server = Flask(__name__)
 external_stylesheets = ['https://fonts.googleapis.com/css2?family=Play&display=swap']
 
@@ -29,22 +28,23 @@ app = Dash(
 )
 app.title = 'MS-FP'
 
-# ---------------- App Layout ----------------
+
 app.layout = dmc.MantineProvider([
     html.Div([
         html.H1('MS file parser', style={"font-family": "'Play'"}),
         dmc.Group([
-            dmc.Chips(
+            dmc.ChipGroup(
                 id="vartype",
-                data=[
-                    {"value": "Conc.", "label": "Concentration"},
-                    {"value": "Response", "label": "Response"},
-                    {"value": "Area", "label": "Area"}
+                value="Conc.",
+                multiple=False,
+                children=[
+                    dmc.Chip(value="Conc.", label="Concentration"),
+                    dmc.Chip(value="Response", label="Response"),
+                    dmc.Chip(value="Area", label="Area"),
                 ],
-                value="Conc."
             ),
             dmc.Checkbox(id="includeIS", label="Include internal Stds")
-        ], position='left'),
+        ], justify='flex-start'),
 
         dmc.Space(h=10),
 
@@ -76,7 +76,7 @@ app.layout = dmc.MantineProvider([
     ])
 ])
 
-# ---------------- Callbacks ----------------
+
 @app.callback(
     Output("download-dataframe-csv", "data"),
     Input("btn_csv", "n_clicks"),
