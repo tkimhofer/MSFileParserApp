@@ -1,4 +1,4 @@
 dash>=2.9.3
-dash-mantine-components>=0.14.6
+dash-mantine-components==0.14.5
 flask>=2.2.5
 pandas>=1.4.0
