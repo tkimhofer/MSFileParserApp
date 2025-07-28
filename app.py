@@ -142,4 +142,4 @@ def update_output(list_of_contents, list_of_names, vtype, include_is):
         return [html.Div([html.Hr(), table])], [html.Hr(), download_btn], summary
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, host='0.0.0.0', port=8050)
